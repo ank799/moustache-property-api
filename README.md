@@ -1,65 +1,37 @@
 # moustache-property-api
-Q1: Initial Thought Process and Problem Breakdown
-Initial Approach:
+# Assignment Overview
 
-Core Requirements Identification:
+> **NOTE:** Please note that you are free to use the tools and helpers of your choice for the final objective to be met, but the code and application should be built on either of Go or Python.
+> 
 
-Input: Fuzzy location query → Output: Properties ≤50km away
+We are serving a business called Moustache Escapes(https://www.moustachescapes.com/) where you are building API’s for assisting their tele-calling team when they are having a conversation with customers regarding their hotel rooms and properties. 
 
-Key challenges: Spelling corrections, geocoding, and fast distance calculations
+Customers call from various parts of the country, and customers would want to visit the city where they have hotels, or nearby areas/cities.
 
-Modular Breakdown:
+In order to ensure that they convert most calls to customers, they require to know the distance of the location mentioned by the customer and find the nearest property that is available. If the property is in the 50km range of the location mentioned by the person, the location should be shown to the tele-calling agent.
 
-Fuzzy Matching Layer: Handle typos (e.g., "delih" → "Delhi")
+You are required to create a backend service which would consider the constraints and core requirements to build an API which would be utilized by the team to create the application for showing the nearest property. The only input that you would receive would be the query entered by the tele-calling agent, while the output would be the list of properties that are available in the 50km radius of the location mentioned. If there are no properties available, the API should return the same.
+**Core Requirements:**
 
-Geocoding System: Convert locations to lat/long coordinates
+- With the input coming in as a query ( any city, state, or area in the country ) you are required to output the list of properties that are in the radius of 50km.
+- If there are no properties available, then output the same.
+- You are required to only build the backend API and no frontend is required.
+- You are free to use LLMs and any tools such as Sambanova, OpenAI, Groq, etc. and any python or GO libraries that you seem necessary.
 
-Distance Calculator: Compare property coordinates using Haversine formula
+**Technical Constraints:**
 
-API Optimization: Ensure <2s response time via caching and pre-processing
+- The response time of the API should be less than 2 seconds as the tele-caller would be using this for real-time communication.
+- Due to the tele-calling typing fast, there might be spelling mistakes which might come as input ( delhi → delih, bangalore → bangalre ). The spelling mistakes would be constraint to 1 or 2 missing characters, or the characters getting swapped.
 
-Q2: Tools and Libraries Used
-Component	Tools Selected	Rationale
-Fuzzy Matching	thefuzz (FuzzyWuzzy)	Lightweight, handles 1-2 character errors efficiently
-Geocoding	OpenStreetMap Nominatim + local SQLite cache	Free tier, avoids Google API costs; caching reduces latency
-API Framework	Flask	Minimal setup, faster for small services vs. Django
-Distance Calc	Custom Haversine implementation	No external dependencies, optimized for speed (~0.2ms per calculation)
-Data Preprocessing	Pandas (property list CSV → in-memory DB)	Fast lookup without database overhead
-Alternatives Considered:
+**Assumptions:**
 
-Geocoding: Google Maps API (rejected due to cost)
+- The input would only be for areas, cities and states and not landmarks and buildings for proximity.
+- The distance calculated based on the latitude and longitude would be the correct distance.
 
-Fuzzy Matching: SymspellPy (rejected due to larger memory footprint)
+### Example Input:
 
-Q3: Key Challenge and Solution
-Challenge: Balancing speed and accuracy in geocoding
-
-Initial tests showed geocoding API calls took 800ms-1.2s, risking timeout
-
-Solution:
-
-Hybrid Caching System:
-
-Preloaded 500+ major Indian cities/states into SQLite
-
-Fallback to OpenStreetMap API only for uncached locations
-
-Reduced average geocoding time to 120ms
-
-Asynchronous Geocoding:
-
-Used concurrent.futures for parallel API calls when multiple variants exist
-
-Example: Querying both "Banglore" and "Bengaluru" simultaneously
-
-Q4: Future Improvements
-Improvement	Potential Impact
-Spatial Indexing	R-tree for 100x faster distance calculations
-ML-Based Typo Correction	Transformer models for better regional spelling handling
-Edge Caching	Cloudflare Workers for global low-latency responses
-Batch Processing	Precompute all property-city pairs for instant lookups
-Why These Matter:
-
-Spatial indexing would future-proof the system for 10,000+ properties
-
-ML correction could handle complex regional names (e.g., "Kolkata" vs "Calcutta")
+1. Sissu
+    1. Sissu is a town in Himachal Pradesh, so the nearest properties would be the property in Koksar which is approximately 5KM away. ( real number calculated based on the latitude and longitude )
+    *Output: Nearest property is Koksar which is 5KM away* 
+2. Jaipur
+    1. Moustache has a property in Jaipur, so the output would mention the same.
