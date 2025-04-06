@@ -1,0 +1,64 @@
+Q1: Initial Thought Process and Problem Breakdown
+Initial Approach:
+
+Core Requirements Identification:
+
+Input: Fuzzy location query → Output: Properties ≤50km away
+
+Key challenges: Spelling corrections, geocoding, and fast distance calculations
+
+Modular Breakdown:
+
+Fuzzy Matching Layer: Handle typos (e.g., "delih" → "Delhi")
+
+Geocoding System: Convert locations to lat/long coordinates
+
+Distance Calculator: Compare property coordinates using Haversine formula
+
+API Optimization: Ensure <2s response time via caching and pre-processing
+
+Q2: Tools and Libraries Used
+Component	Tools Selected	Rationale
+Fuzzy Matching	thefuzz (FuzzyWuzzy)	Lightweight, handles 1-2 character errors efficiently
+Geocoding	OpenStreetMap Nominatim + local SQLite cache	Free tier, avoids Google API costs; caching reduces latency
+API Framework	Flask	Minimal setup, faster for small services vs. Django
+Distance Calc	Custom Haversine implementation	No external dependencies, optimized for speed (~0.2ms per calculation)
+Data Preprocessing	Pandas (property list CSV → in-memory DB)	Fast lookup without database overhead
+Alternatives Considered:
+
+Geocoding: Google Maps API (rejected due to cost)
+
+Fuzzy Matching: SymspellPy (rejected due to larger memory footprint)
+
+Q3: Key Challenge and Solution
+Challenge: Balancing speed and accuracy in geocoding
+
+Initial tests showed geocoding API calls took 800ms-1.2s, risking timeout
+
+Solution:
+
+Hybrid Caching System:
+
+Preloaded 500+ major Indian cities/states into SQLite
+
+Fallback to OpenStreetMap API only for uncached locations
+
+Reduced average geocoding time to 120ms
+
+Asynchronous Geocoding:
+
+Used concurrent.futures for parallel API calls when multiple variants exist
+
+Example: Querying both "Banglore" and "Bengaluru" simultaneously
+
+Q4: Future Improvements
+Improvement	Potential Impact
+Spatial Indexing	R-tree for 100x faster distance calculations
+ML-Based Typo Correction	Transformer models for better regional spelling handling
+Edge Caching	Cloudflare Workers for global low-latency responses
+Batch Processing	Precompute all property-city pairs for instant lookups
+Why These Matter:
+
+Spatial indexing would future-proof the system for 10,000+ properties
+
+ML correction could handle complex regional names (e.g., "Kolkata" vs "Calcutta")
